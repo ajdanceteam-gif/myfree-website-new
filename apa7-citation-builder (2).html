@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>APA 7 citation builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#e4e2d6;
+  --desk-deep:#d8d5c6;
+  --sheet:#ffffff;
+  --ink:#23261d;
+  --muted:#6e7263;
+  --rule:#c9c6b6;
+  --tag:#bacd9e;
+  --tag-ink:#3a5223;
+  --mark:#fbec5d;
+  --crimson:#a81f36;
+  --field:#fbfaf5;
+  --sans:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --serif:"Times New Roman",Tinos,"Liberation Serif",Georgia,serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0;padding:0}
+body{
+  background:var(--desk);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;color:inherit}
+input,select,textarea{font-family:inherit;font-size:15px;color:inherit}
+
+/* ---------- masthead ---------- */
+.masthead{
+  max-width:1240px;margin:0 auto;padding:28px 24px 10px;
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+}
+.wordmark{font-size:21px;font-weight:600;letter-spacing:-.01em;color:var(--crimson);margin:0}
+.masthead p{margin:0;color:var(--muted);font-size:14px;max-width:46ch}
+
+/* ---------- layout ---------- */
+.workspace{
+  max-width:1240px;margin:0 auto;padding:10px 24px 80px;
+  display:grid;grid-template-columns:minmax(320px,430px) 1fr;gap:34px;align-items:start;
+}
+@media (max-width:940px){
+  .workspace{grid-template-columns:1fr;gap:26px}
+}
+
+/* ---------- form side ---------- */
+.form-pane{position:sticky;top:20px}
+@media (max-width:940px){.form-pane{position:static}}
+
+fieldset{border:0;padding:0;margin:0 0 22px}
+legend{padding:0;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:9px}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  border:1px solid var(--rule);background:transparent;border-radius:2px;
+  padding:6px 10px;font-size:13.5px;cursor:pointer;line-height:1.2;
+}
+.chip:hover{background:var(--desk-deep)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--desk);font-weight:500}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.field{flex:1 1 100%;min-width:0}
+.field.s{flex:1 1 90px}
+.field.m{flex:1 1 160px}
+label.lab{display:block;font-size:13px;margin-bottom:4px;color:var(--muted)}
+.inp{
+  width:100%;padding:8px 9px;border:1px solid var(--rule);border-radius:2px;
+  background:var(--field);
+}
+.inp:focus,.chip:focus-visible,.btn:focus-visible,.mini:focus-visible,.x:focus-visible{
+  outline:2px solid var(--crimson);outline-offset:1px;
+}
+.hint{font-size:12.5px;color:var(--muted);margin:4px 0 0;line-height:1.35}
+.labrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mini{
+  border:1px solid var(--rule);background:var(--field);border-radius:2px;
+  font-size:11.5px;padding:2px 6px;cursor:pointer;color:var(--muted);
+}
+.mini:hover{background:var(--desk-deep);color:var(--ink)}
+
+.author{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.author .inp{flex:1 1 40%}
+.x{
+  border:1px solid transparent;background:transparent;cursor:pointer;
+  color:var(--muted);font-size:17px;line-height:1;padding:7px 8px;border-radius:2px;
+}
+.x:hover{background:var(--desk-deep);color:var(--crimson)}
+.grouptog{
+  display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--muted);
+  white-space:nowrap;padding-top:9px;cursor:pointer;
+}
+.addrow{display:flex;gap:8px;margin-top:2px}
+.btn{
+  border:1px solid var(--ink);background:transparent;border-radius:2px;
+  padding:7px 12px;font-size:13.5px;cursor:pointer;
+}
+.btn:hover{background:var(--ink);color:var(--desk)}
+.btn.solid{background:var(--ink);color:var(--desk)}
+.btn.solid:hover{background:#000}
+.btn.quiet{border-color:var(--rule);color:var(--muted)}
+.btn.quiet:hover{background:var(--desk-deep);color:var(--ink);border-color:var(--rule)}
+
+.check{display:flex;gap:8px;align-items:flex-start;font-size:14px;cursor:pointer;margin-bottom:8px}
+.check input{margin:3px 0 0}
+.subpanel{border-left:2px solid var(--tag);padding-left:12px;margin:10px 0 0}
+
+/* ---------- sheet side ---------- */
+.sheet{
+  background:var(--sheet);border:1px solid var(--rule);
+  box-shadow:0 1px 0 rgba(0,0,0,.05);
+  padding:34px 38px 30px;position:relative;
+}
+@media (max-width:520px){.sheet{padding:26px 20px 22px}}
+.folio{
+  position:absolute;top:14px;right:20px;font-family:var(--serif);font-size:13px;color:var(--muted);
+}
+.sheet h2{
+  font-family:var(--serif);font-weight:700;font-size:16px;text-align:center;
+  margin:0 0 16px;letter-spacing:.01em;
+}
+.entry{
+  font-family:var(--serif);font-size:16px;line-height:2;
+  padding-left:2.2em;text-indent:-2.2em;margin:0;
+  overflow-wrap:break-word;
+}
+.entry a{color:#1a4f8a;text-decoration:underline}
+.running{font-family:var(--serif);font-size:16px;line-height:2;margin:0}
+.mark{background:var(--mark);padding:.05em .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.miss{color:#9a9a8c;font-style:normal}
+
+.block{margin:0 0 22px}
+.block:last-child{margin-bottom:0}
+.tag{
+  display:inline-block;background:var(--tag);color:var(--tag-ink);
+  font-family:var(--sans);font-size:11.5px;font-weight:500;
+  padding:3px 8px;border-radius:2px;margin-bottom:6px;
+}
+.tag .sec{opacity:.72}
+.note{
+  font-family:var(--sans);font-size:12.5px;color:var(--muted);
+  margin:6px 0 0;padding-left:2px;max-width:62ch;line-height:1.45;
+}
+.divide{border:0;border-top:1px solid var(--rule);margin:24px 0}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+/* ---------- reference list ---------- */
+.list{margin-top:26px}
+.list-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.list-head h3{margin:0;font-size:14px;font-weight:600}
+.list-empty{
+  font-size:13.5px;color:var(--muted);border:1px dashed var(--rule);
+  padding:14px 16px;background:rgba(255,255,255,.45);
+}
+.item{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--rule)}
+.item:last-of-type{border-bottom:0}
+.item .entry{flex:1;line-height:1.75}
+
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+  background:var(--ink);color:var(--desk);padding:9px 16px;border-radius:2px;
+  font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .18s ease;
+}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1 class="wordmark">APA 7 citation builder</h1>
+  <p>Built for Indian research writing. Fill in what you have and the reference entry and every in-text form appear as you type, each labelled with the rule it follows.</p>
+</header>
+
+<main class="workspace">
+
+  <!-- ============ FORM ============ -->
+  <section class="form-pane" aria-label="Source details">
+
+    <fieldset>
+      <legend>Which legal system are you citing from?</legend>
+      <div class="chips" id="jurChips">
+        <button class="chip" type="button" data-j="IN" aria-pressed="true">India</button>
+        <button class="chip" type="button" data-j="US" aria-pressed="false">United States</button>
+      </div>
+      <p class="hint">This changes the legal source types only. Everything else — articles, books, reports, theses — is the same either way.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend>What kind of source is it?</legend>
+      <div class="chips" id="typeChips"></div>
+    </fieldset>
+
+    <fieldset id="authorSet">
+      <legend id="authorLegend">Authors</legend>
+      <div id="authors"></div>
+      <div class="addrow">
+        <button class="btn quiet" type="button" id="addAuthor">Add another author</button>
+      </div>
+      <p class="hint" id="authorHint">Surname first, then given names in full — initials are made for you. For a suffix, type it after a comma in the surname box: <em>Elswick, Jr.</em></p>
+    </fieldset>
+
+    <fieldset id="dateSet">
+      <legend>Date</legend>
+      <div class="row">
+        <div class="field s">
+          <label class="lab" for="year" id="yearLab">Year</label>
+          <input class="inp" id="year" data-k="year" placeholder="2019">
+        </div>
+        <div class="field m" id="datepartWrap">
+          <label class="lab" for="datepart">Month and day, if shown</label>
+          <input class="inp" id="datepart" data-k="datepart" placeholder="October 8">
+        </div>
+      </div>
+      <p class="hint" id="dateHint">No date anywhere on the source? Put <strong>n.d.</strong> in the year box. Conference dates can be a range: <em>August 23–27</em>.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend id="detailLegend">Details</legend>
+      <div id="fields"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Extras</legend>
+
+      <label class="check" id="secondaryCheck">
+        <input type="checkbox" id="secondary">
+        <span>I read about this work somewhere else (secondary source)</span>
+      </label>
+      <div class="subpanel" id="secondaryPanel" hidden>
+        <div class="row">
+          <div class="field m">
+            <label class="lab" for="origAuthor">Original author, as you'd name them</label>
+            <input class="inp" id="origAuthor" data-k="origAuthor" placeholder="Joseph Wolpe">
+          </div>
+          <div class="field s">
+            <label class="lab" for="origYear">Original year</label>
+            <input class="inp" id="origYear" data-k="origYear" placeholder="1960">
+          </div>
+        </div>
+        <p class="hint">Everything above describes the work you actually read — only that work goes in the reference list. Put the surname alone here for a bracketed citation, or the full name if you name the person in your sentence.</p>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" id="hasPage">
+        <span>I'm quoting or pointing to a specific page</span>
+      </label>
+      <div class="subpanel" id="pagePanel" hidden>
+        <div class="row">
+          <div class="field s">
+            <label class="lab" for="locator">Page or paragraph</label>
+            <input class="inp" id="locator" data-k="locator" placeholder="850">
+          </div>
+          <div class="field m">
+            <label class="lab" for="locatorType">Kind</label>
+            <select class="inp" id="locatorType" data-k="locatorType">
+              <option value="p.">Single page (p.)</option>
+              <option value="pp.">Page range (pp.)</option>
+              <option value="para.">Paragraph (para.)</option>
+              <option value="Chapter">Chapter</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <label class="check" id="abbrevCheck">
+        <input type="checkbox" id="hasAbbrev">
+        <span>Abbreviate the group author after its first mention</span>
+      </label>
+      <div class="subpanel" id="abbrevPanel" hidden>
+        <div class="row">
+          <div class="field m">
+            <label class="lab" for="abbrev">Abbreviation</label>
+            <input class="inp" id="abbrev" data-k="abbrev" placeholder="APA">
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="addrow">
+      <button class="btn quiet" type="button" id="clearForm">Clear the form</button>
+      <button class="btn quiet" type="button" id="loadExample">Load an example</button>
+    </div>
+  </section>
+
+  <!-- ============ SHEET ============ -->
+  <section aria-label="Formatted citations">
+    <div class="sheet">
+      <div class="folio" id="folio">10</div>
+      <div id="output"></div>
+    </div>
+
+    <div class="list">
+      <div class="list-head">
+        <h3>Your reference list <span id="listCount" style="color:var(--muted);font-weight:400"></span></h3>
+        <div class="acts" style="margin:0">
+          <button class="btn quiet" type="button" id="copyAll">Copy the whole list</button>
+          <button class="btn quiet" type="button" id="clearAll">Empty the list</button>
+        </div>
+      </div>
+      <div id="listBody"></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   APA 7 citation builder
+   Rules implemented from the Publication Manual (7th ed.):
+   8.1 repeated citations · 8.6 secondary sources · 8.9 personal
+   communications · 8.11 narrative citations · 8.12 "see also" ·
+   8.16 year omitted on repeat · 8.17 author counts and et al. ·
+   8.23–8.27 paraphrases and quotations · 9.8–9.12 reference names ·
+   10.1–10.16 reference templates.
+   ===================================================================== */
+
+/* ---------- source types ---------- */
+const TYPES = [
+  {id:'journal', name:'Journal article', sec:'10.1', folio:'10',
+   authorLabel:'Authors',
+   fields:[
+    {k:'title', label:'Article title', ph:'Understanding leakages in the public distribution system', cs:'sentence',
+     hint:'Sentence case: capitalise only the first word, the first word after a colon, and proper nouns.'},
+    {k:'container', label:'Journal name', ph:'Economic and Political Weekly', cs:'title', hint:'Title Case, exactly as the journal styles itself.'},
+    {k:'volume', label:'Volume', ph:'50', w:'s'},
+    {k:'issue', label:'Issue', ph:'7', w:'s'},
+    {k:'pages', label:'Pages', ph:'39-42', w:'m'},
+    {k:'doi', label:'DOI or URL', ph:'10.xxxx/xxxxxx', hint:'Paste the bare DOI or the whole link — either becomes https://doi.org/…'}
+   ]},
+
+  {id:'magazine', name:'Magazine or newspaper article', sec:'10.1', folio:'10',
+   authorLabel:'Authors',
+   fields:[
+    {k:'title', label:'Article title', ph:'Why farm incomes are stagnating', cs:'sentence'},
+    {k:'container', label:'Magazine or newspaper', ph:'The Hindu', cs:'title'},
+    {k:'volume', label:'Volume', ph:'', w:'s'},
+    {k:'issue', label:'Issue', ph:'', w:'s'},
+    {k:'pages', label:'Pages', ph:'1, 8', w:'m'},
+    {k:'doi', label:'URL', ph:'https://www.thehindu.com/…'}
+   ]},
+
+  {id:'book', name:'Whole book', sec:'10.2', folio:'10',
+   authorLabel:'Authors',
+   fields:[
+    {k:'title', label:'Book title', ph:'Poverty and famines: An essay on entitlement and deprivation', cs:'sentence'},
+    {k:'edition', label:'Edition', ph:'5th', w:'m', hint:'Just the number and ordinal — "ed." is added for you. Leave blank for a first edition.'},
+    {k:'publisher', label:'Publisher', ph:'Oxford University Press', hint:'Publisher location is not used in the 7th edition.'},
+    {k:'doi', label:'DOI or URL, if there is one', ph:'10.1037/10352-001'}
+   ]},
+
+  {id:'chapter', name:'Chapter in an edited book', sec:'10.3', folio:'10',
+   authorLabel:'Chapter authors',
+   fields:[
+    {k:'title', label:'Chapter title', ph:'Caste, class and the politics of recognition', cs:'sentence'},
+    {k:'editors', label:'Book editors', ta:true, ph:"Rajeev Bhargava\nAshok Acharya",
+     hint:'One editor per line. Initials go first in the reference, and that is handled for you.'},
+    {k:'container', label:'Book title', ph:'Political theory: An introduction', cs:'sentence'},
+    {k:'edition', label:'Edition', ph:'2nd', w:'m'},
+    {k:'pages', label:'Chapter pages', ph:'112-134', w:'m'},
+    {k:'publisher', label:'Publisher', ph:'Pearson'},
+    {k:'doi', label:'DOI or URL, if there is one', ph:''}
+   ]},
+
+  {id:'report', name:'Report', sec:'10.4', folio:'10',
+   authorLabel:'Author, usually a ministry or institution',
+   fields:[
+    {k:'title', label:'Report title', ph:'National Family Health Survey (NFHS-5), 2019-21: India report', cs:'sentence'},
+    {k:'number', label:'Report number', ph:'Report No. 277', w:'m'},
+    {k:'publisher', label:'Publisher, only if different from the author', ph:''},
+    {k:'doi', label:'URL', ph:'https://mohfw.gov.in/…'}
+   ]},
+
+  {id:'webpage', name:'Web page', sec:'10.16', folio:'10',
+   authorLabel:'Author or organisation',
+   fields:[
+    {k:'title', label:'Page title', ph:'About the Mahatma Gandhi National Rural Employment Guarantee Act', cs:'sentence'},
+    {k:'container', label:'Site name', ph:'Press Information Bureau', cs:'title', hint:'Leave blank when the site name and the author are the same.'},
+    {k:'doi', label:'URL', ph:'https://…'},
+    {k:'retrieved', label:'Retrieval date, only for pages designed to change', ph:'September 5, 2026', w:'m',
+     hint:'Needed for things like a live statistics dashboard or a wiki, not for ordinary pages.'}
+   ]},
+
+  {id:'blog', name:'Blog post', sec:'10.1', folio:'11',
+   authorLabel:'Authors',
+   fields:[
+    {k:'title', label:'Post title', ph:'What the new labour codes change for informal workers', cs:'sentence'},
+    {k:'container', label:'Blog name', ph:'Ideas for India', cs:'title'},
+    {k:'doi', label:'URL', ph:'https://bit.ly/xxxxxxx', hint:'A shortened link is acceptable when the original is very long (9.36).'}
+   ]},
+
+  {id:'video', name:'Online video', sec:'10.12', folio:'10',
+   authorLabel:'Uploader or channel',
+   fields:[
+    {k:'title', label:'Video title', ph:'Making of the Indian Constitution', cs:'sentence'},
+    {k:'container', label:'Platform', ph:'YouTube', cs:'title'},
+    {k:'doi', label:'URL', ph:'https://www.youtube.com/watch?v=xxxxxxxxxxx'}
+   ]},
+
+  {id:'conference', name:'Conference presentation', sec:'10.5', folio:'11',
+   authorLabel:'Presenters',
+   fields:[
+    {k:'title', label:'Presentation title', ph:'Digitising land records in Tamil Nadu', cs:'sentence'},
+    {k:'kind', label:'Kind of presentation', sel:['Paper presentation','Poster presentation','Conference session','Keynote address'], w:'m'},
+    {k:'container', label:'Conference name', ph:'Indian Sociological Society 47th All India Sociological Conference', cs:'title'},
+    {k:'place', label:'Place', ph:'Chennai, Tamil Nadu, India'},
+    {k:'doi', label:'URL, if there is one', ph:''}
+   ]},
+
+  {id:'thesis', name:'Dissertation or thesis', sec:'10.6', folio:'12',
+   authorLabel:'Author',
+   fields:[
+    {k:'title', label:'Title', ph:'Migration and household livelihoods in western Tamil Nadu', cs:'sentence'},
+    {k:'number', label:'Publication number', ph:'12345', w:'m'},
+    {k:'kind', label:'Kind', sel:['Doctoral dissertation','Master\u2019s thesis','Unpublished doctoral dissertation','Unpublished master\u2019s thesis'], w:'m'},
+    {k:'publisher', label:'University', ph:'University of Madras'},
+    {k:'container', label:'Database or repository', ph:'Shodhganga',
+     hint:'Shodhganga holds most Indian theses. Leave blank for an unpublished one — the university name is enough.'},
+    {k:'doi', label:'URL, if there is one', ph:''}
+   ]},
+
+  {id:'case', name:'Court case', sec:'11.1', folio:'11', legal:true, jur:'US', isCase:true,
+   dateLabel:'Year decided',
+   dateHint:'Legal references end with the date rather than opening with it \u2014 the order is what, where, when.',
+   fields:[
+    {k:'casename', label:'Case name', ph:'United States v. Lane',
+     hint:'Type it in plain text. It stays plain in the reference list and is set in italics wherever you cite it in your writing.'},
+    {k:'casevol', label:'Reporter volume', ph:'474', w:'s'},
+    {k:'reporter', label:'Reporter', ph:'U.S.', w:'m', hint:'The published record: U.S., F.3d, Cal. App. 3d.'},
+    {k:'casepage', label:'First page', ph:'438', w:'s'},
+    {k:'court', label:'Court', ph:'Cal. App. 3d',
+     hint:'Leave this blank for the U.S. Supreme Court \u2014 the U.S. reporter already identifies the court.'},
+    {k:'lurl', label:'URL, if available', ph:'https://\u2026'}
+   ]},
+
+  {id:'statute', name:'Statute, law or act', sec:'11.2', folio:'11', legal:true, jur:'US',
+   dateLabel:'Year of the version you used',
+   dateHint:'Leave the year out if the code you are citing carries no date. A range like 2010\u20132011 is fine.',
+   fields:[
+    {k:'actname', label:'Name of the act', ph:'Nursing Practice Act'},
+    {k:'titleno', label:'Title or volume number', ph:'20', w:'s', hint:'The number that sits before the code name, when there is one.'},
+    {k:'code', label:'Code or source', ph:'Cal. Bus. & Prof. Code', w:'m',
+     hint:'U.S.C. for federal law, a state code such as Cal. Penal Code, or C.F.R. for a regulation.'},
+    {k:'section', label:'Section', ph:'2700', w:'s', hint:'The number only \u2014 the \u00a7 is added for you.'},
+    {k:'etseq', chk:'And the sections that follow it (et seq.)'},
+    {k:'publaw', label:'Public law number', ph:'Pub. L. No. 111-2',
+     hint:'Use this instead of a code section when you are citing an act as passed.'},
+    {k:'stat', label:'Statutes at Large', ph:'123 Stat. 5', w:'m'},
+    {k:'lurl', label:'URL, if available', ph:'https://\u2026'}
+   ]},
+
+  {id:'constitution', name:'Constitution', sec:'11.6', folio:'11', legal:true, jur:'US', isConst:true, noYear:true,
+   fields:[
+    {k:'constname', label:'Constitution', ph:'U.S. Const.', w:'m', hint:'U.S. Const. for the federal one, or a state: Cal. Const.'},
+    {k:'partkind', label:'Part', sel:['Amendment','Article','Preamble'], w:'m'},
+    {k:'partno', label:'Number', ph:'XIX', w:'s', hint:'Roman numerals: I, XIV, XIX.'},
+    {k:'csection', label:'Section', ph:'3', w:'s'},
+    {k:'clause', label:'Clause', ph:'1', w:'s'},
+    {k:'cnote', label:'Status note', ph:'repealed 1933', w:'m', hint:'Only if the part has been repealed or amended.'}
+   ]},
+
+  {id:'legislation', name:'Bill, resolution or hearing', sec:'11.5', folio:'11', legal:true, jur:'US',
+   dateLabel:'Year',
+   dateHint:'A state session can be a range: 2010-2011.',
+   fields:[
+    {k:'billtitle', label:'Title', ph:'Equitable Health Care for Severe Mental Illnesses Act of 1993',
+     hint:'Italicised in the reference. Use this shape for a bill or resolution that never became law \u2014 once it is signed, cite it as a statute.'},
+    {k:'billno', label:'Bill or resolution number', ph:'S. 671', w:'m', hint:'S. 671, H.R. 5, Cal. Assemb. B. 12.'},
+    {k:'session', label:'Congress and session', ph:'103d Cong., 1st Sess.', hint:'Leave blank for a state bill that uses a session range instead.'},
+    {k:'billextra', label:'Anything that follows the year', ph:'Chapter 559 (Cal. Stat. 2010)'},
+    {k:'lurl', label:'URL, if available', ph:'https://\u2026'}
+   ]},
+
+  /* ---------- Indian legal sources ---------- */
+  {id:'case_in', name:'Indian judgment', sec:'11.1 adapted', folio:'11', legal:true, jur:'IN', isCase:true,
+   dateLabel:'Year of the judgment',
+   dateHint:'For a neutral citation or an unreported judgment the year is taken from the citation or the date, so you can leave this blank.',
+   fields:[
+    {k:'casename', label:'Case name', ph:'Kesavananda Bharati v. State of Kerala',
+     hint:'Parties separated by v. It stays plain in the reference list and turns italic wherever you cite it.'},
+    {k:'cmode', label:'How is it reported?', rerender:true,
+     sel:['SCC and similar \u2014 (1973) 4 SCC 225','AIR \u2014 AIR 1973 SC 1461','Neutral citation \u2014 2023 INSC 216','Not yet reported']},
+
+    {k:'ivol', label:'Volume', ph:'4', w:'s', when:v => (v.cmode||'').startsWith('SCC')},
+    {k:'ireporter', label:'Reporter', ph:'SCC', w:'m', when:v => (v.cmode||'').startsWith('SCC'),
+     hint:'SCC, SCR, SCALE, Mad LJ. Prefer SCC or AIR where both exist.'},
+    {k:'ipage', label:'First page', ph:'225', w:'s', when:v => (v.cmode||'').startsWith('SCC')},
+
+    {k:'icourt', label:'Court abbreviation', ph:'SC', w:'s', when:v => (v.cmode||'').startsWith('AIR'),
+     hint:'SC for the Supreme Court, or a High Court: Mad, Del, Bom, Ker.'},
+    {k:'ipage2', label:'Page', ph:'1461', w:'s', when:v => (v.cmode||'').startsWith('AIR')},
+
+    {k:'ineutral', label:'Neutral citation', ph:'2023 INSC 216', when:v => (v.cmode||'').startsWith('Neutral'),
+     hint:'The court\u2019s own number: year, court code, running number. Supreme Court judgments use INSC; High Courts use their own, such as 2023:DHC:1234.'},
+
+    {k:'icaseno', label:'Case or appeal number', ph:'Civil Appeal No. 128 of 2013', when:v => (v.cmode||'').startsWith('Not')},
+    {k:'icourtfull', label:'Court', ph:'Supreme Court of India', when:v => (v.cmode||'').startsWith('Not')},
+    {k:'idate', label:'Date of the judgment', ph:'8 January 2013', w:'m', when:v => (v.cmode||'').startsWith('Not')},
+
+    {k:'ipin', label:'Pinpoint', ph:'para. 316', w:'m', hint:'The exact paragraph or page you are relying on, if any.'},
+    {k:'india', chk:'Add (India) at the end \u2014 for journals with an international readership'},
+    {k:'lurl', label:'URL, if available', ph:'https://\u2026'}
+   ]},
+
+  {id:'act_in', name:'Indian Act', sec:'11.2 adapted', folio:'11', legal:true, jur:'IN',
+   dateLabel:'Year of enactment',
+   dateHint:'The year the Act was passed. If it is already part of the name, the tool will not repeat it in your in-text citation.',
+   fields:[
+    {k:'iactname', label:'Name of the Act', ph:'The Right to Information Act, 2005',
+     hint:'Give it exactly as the Act names itself, year included.'},
+    {k:'iactno', label:'Act number', ph:'22', w:'s', hint:'The number only \u2014 "No." is added for you.'},
+    {k:'iactsource', label:'Enacting authority', ph:'Acts of Parliament', w:'m',
+     hint:'Acts of Parliament for a central Act, or a state: Acts of Tamil Nadu State Legislature.'},
+    {k:'isection', label:'Section', ph:'8(1)(j)', w:'m', hint:'The provision you are relying on, if any.'},
+    {k:'india', chk:'Add (India) at the end'},
+    {k:'lurl', label:'URL, if available', ph:'https://www.indiacode.nic.in/\u2026',
+     hint:'India Code is the official source for central and state Acts.'}
+   ]},
+
+  {id:'const_in', name:'Constitution of India', sec:'11.6 adapted', folio:'11', legal:true, jur:'IN',
+   isConst:true, noYear:true,
+   fields:[
+    {k:'iconstname', label:'Constitution', ph:'India Const.', w:'m',
+     hint:'India Const. is the standard short form.'},
+    {k:'ipart', label:'Part', sel:['Article','Schedule','Part','Preamble'], w:'m'},
+    {k:'ipartno', label:'Number', ph:'21', w:'s', hint:'Article numbers are Arabic: 14, 21, 368.'},
+    {k:'iclause', label:'Clause', ph:'1', w:'s'},
+    {k:'iamend', label:'Amendment note', ph:'amended by The Constitution (Forty-second Amendment) Act, 1976',
+     hint:'Only when the provision has been amended, substituted or repealed.'}
+   ]},
+
+  {id:'bill_in', name:'Indian Bill', sec:'11.5 adapted', folio:'11', legal:true, jur:'IN',
+   dateLabel:'Year introduced',
+   fields:[
+    {k:'ibilltitle', label:'Title of the Bill', ph:'The Competition (Amendment) Bill, 2012',
+     hint:'Use this while a Bill is still a Bill. Once it receives assent, cite it as an Act.'},
+    {k:'ibillno', label:'Bill number', ph:'Bill No. 136 of 2012', w:'m'},
+    {k:'ihouse', label:'House', sel:['Lok Sabha','Rajya Sabha','State Legislative Assembly','State Legislative Council'], w:'m'},
+    {k:'istatus', label:'Status', ph:'pending', w:'m',
+     hint:'For example: pending, or passed by Lok Sabha, 29 November 2012.'},
+    {k:'lurl', label:'URL, if available', ph:'https://prsindia.org/\u2026'}
+   ]},
+
+  {id:'rule_in', name:'Rules, regulations or notification', sec:'11.4 adapted', folio:'11', legal:true, jur:'IN',
+   dateLabel:'Year',
+   fields:[
+    {k:'iruletitle', label:'Title', ph:'The Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021',
+     hint:'Subordinate legislation: rules, regulations, orders, schemes and gazette notifications.'},
+    {k:'inotif', label:'Notification number', ph:'G.S.R. 139(E)', w:'m'},
+    {k:'igazette', label:'Where it was published', ph:'Gazette of India, pt. II sec. 3(i)',
+     hint:'The part and section of the Gazette, printed on the notification itself.'},
+    {k:'irdate', label:'Date of publication', ph:'25 February 2021', w:'m'},
+    {k:'lurl', label:'URL, if available', ph:'https://egazette.gov.in/\u2026'}
+   ]},
+
+  {id:'dataset', name:'Data set', sec:'10.9', folio:'10',
+   authorLabel:'Author or agency',
+   fields:[
+    {k:'title', label:'Title of the data set', ph:'National Family Health Survey (NFHS-5), 2019-21', cs:'sentence'},
+    {k:'edition', label:'Version or round', ph:'Round 5', w:'m'},
+    {k:'publisher', label:'Publisher or distributor', ph:'International Institute for Population Sciences'},
+    {k:'doi', label:'DOI or URL', ph:'https://\u2026'}
+   ]},
+
+  {id:'personal', name:'Personal communication', sec:'8.9', folio:'9',
+   authorLabel:'Who you heard it from',
+   noRef:true,
+   fields:[
+    {k:'pcdate', label:'Exact date', ph:'17 March 2026', w:'m'}
+   ]}
+];
+
+/* ---------- state ---------- */
+let JUR = 'IN';
+let TYPE = TYPES[0];
+const COUNTERPART = {
+  case:'case_in', statute:'act_in', constitution:'const_in', legislation:'bill_in',
+  case_in:'case', act_in:'statute', const_in:'constitution', bill_in:'legislation', rule_in:'statute'
+};
+let authors = [{last:'',first:'',group:false}];
+const V = {locatorType:'p.', kind:''};
+let refList = [];
+
+/* ---------- text helpers ---------- */
+const esc = s => String(s==null?'':s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const it = s => '<i>'+s+'</i>';
+const miss = s => '<span class="miss">['+esc(s)+']</span>';
+const val = k => (typeof V[k] === 'string' ? V[k] : '').trim();
+const enDash = s => s.replace(/(\d)\s*[-\u2010\u2012\u2013\u2014]\s*(\d)/g,'$1\u2013$2');
+
+function endPunct(s){                       // add a full stop unless one is already there
+  const t = s.replace(/<[^>]+>/g,'').trim();
+  return /[.?!]["\u201d\u2019']?$/.test(t) ? s : s + '.';
+}
+function initialsOf(first){
+  return first.trim().split(/\s+/).filter(Boolean).map(w =>
+    w.split('-').map(p => p.replace(/\./g,'')).filter(Boolean)
+     .map(p => p[0].toUpperCase()+'.').join('-')
+  ).join(' ');
+}
+function splitSuffix(last){                 // "Elswick, Jr." -> {name, suffix}
+  const i = last.indexOf(',');
+  return i === -1 ? {name:last.trim(), suffix:''}
+                  : {name:last.slice(0,i).trim(), suffix:last.slice(i+1).trim()};
+}
+/* surname-first, for the reference list (9.8) */
+function refName(a){
+  if(a.group) return (a.last||a.first||'').trim();
+  const {name,suffix} = splitSuffix(a.last||'');
+  const ini = initialsOf(a.first||'');
+  if(!name) return '';
+  return name + (ini ? ', '+ini : '') + (suffix ? ', '+suffix : '');
+}
+/* initials-first, for editors (10.3) */
+function edName(a){
+  const {name,suffix} = splitSuffix(a.last||'');
+  const ini = initialsOf(a.first||'');
+  if(!name) return '';
+  return (ini ? ini+' ' : '') + name + (suffix ? ', '+suffix : '');
+}
+function surname(a){
+  return a.group ? (a.last||a.first||'').trim() : splitSuffix(a.last||'').name;
+}
+/* 9.8: up to 20 names; 21 or more, list 19 then an ellipsis then the last */
+function joinRef(list){
+  const n = list.length;
+  if(!n) return '';
+  if(n===1) return list[0];
+  if(n===2) return list[0]+', & '+list[1];
+  if(n<=20) return list.slice(0,-1).join(', ')+', & '+list[n-1];
+  return list.slice(0,19).join(', ')+', . . . '+list[n-1];
+}
+/* editors take an ampersand with no serial comma when there are exactly two */
+function joinEditors(list){
+  const n = list.length;
+  if(!n) return '';
+  if(n===1) return list[0];
+  if(n===2) return list[0]+' & '+list[1];
+  return list.slice(0,-1).join(', ')+', & '+list[n-1];
+}
+function liveAuthors(){
+  return authors.filter(a => (a.last||'').trim() || (a.first||'').trim());
+}
+function parseEditors(raw){
+  return raw.split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+    if(line.includes(',')){
+      const [l, f] = line.split(',');
+      return {last:l.trim(), first:(f||'').trim()};
+    }
+    const w = line.split(/\s+/);
+    return {last:w.pop(), first:w.join(' ')};
+  });
+}
+function normLink(v){
+  v = v.trim();
+  if(!v) return '';
+  if(/^https?:\/\//i.test(v)) return v;
+  v = v.replace(/^doi:\s*/i,'');
+  if(/^10\./.test(v)) return 'https://doi.org/'+v;
+  if(/^www\./i.test(v)) return 'https://'+v;
+  return v;
+}
+function linkHTML(v){
+  const u = normLink(v);
+  return u ? ' <a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(u)+'</a>' : '';
+}
+function sentenceCase(s){
+  let start = true;
+  return s.split(/(\s+)/).map(tok => {
+    if(/^\s+$/.test(tok)) return tok;
+    const bare = tok.replace(/[^A-Za-z]/g,'');
+    const keep = (bare.length>1 && bare === bare.toUpperCase()) || /\d/.test(tok) || bare==='I';
+    let out = keep ? tok : (start ? tok.charAt(0).toUpperCase()+tok.slice(1).toLowerCase() : tok.toLowerCase());
+    start = /[:.?!]["\u201d)]?$/.test(tok);
+    return out;
+  }).join('');
+}
+const SMALL = new Set(['a','an','the','and','but','or','nor','for','as','at','by','in','of','on','to','up','via','with','from','into','over']);
+function titleCase(s){
+  const w = s.split(/(\s+)/);
+  let idx = 0;
+  return w.map(tok => {
+    if(/^\s+$/.test(tok)) return tok;
+    const bare = tok.replace(/[^A-Za-z]/g,'');
+    if(bare.length>1 && bare===bare.toUpperCase()) return tok;
+    const isEdge = idx===0;
+    idx++;
+    const low = tok.toLowerCase();
+    if(!isEdge && SMALL.has(low.replace(/[^a-z]/g,''))) return low;
+    return low.charAt(0).toUpperCase()+low.slice(1);
+  }).join('');
+}
+
+/* ---------- date ---------- */
+function refDate(){
+  const y = val('year'), d = val('datepart');
+  if(!y && !d) return miss('year');
+  if(/^n\.?\s?d\.?$/i.test(y)) return 'n.d.';
+  return esc(y || '') + (d ? ', '+esc(enDash(d)) : '');
+}
+function textYear(){
+  const y = val('year');
+  if(!y) return miss('year');
+  return /^n\.?\s?d\.?$/i.test(y) ? 'n.d.' : esc(y);
+}
+
+/* =====================================================================
+   Reference entry (chapter 10)
+   ===================================================================== */
+function constitutionString(full){
+  const c = val('constname') || 'U.S. Const.';
+  const kind = val('partkind') || 'Amendment';
+  let s = esc(c.replace(/\.\s*$/,'')) + '.';
+  if(kind === 'Preamble'){
+    s += ' pmbl.';
+  }else{
+    s += kind === 'Article' ? ' art. ' : ' amend. ';
+    s += val('partno') ? esc(val('partno')) : miss('number');
+  }
+  if(val('csection')) s += ', \u00a7 ' + esc(val('csection'));
+  if(val('clause')) s += ', cl. ' + esc(val('clause'));
+  if(full && val('cnote')) s += ' (' + esc(val('cnote')) + ')';
+  return s;
+}
+
+/* chapter 11: what, where, when — no author, no leading date */
+function indiaTag(){ return V.india ? ' (India)' : ''; }
+
+/* the year an Indian judgment is cited by, wherever it comes from */
+function indianCaseYear(){
+  const m = (val('cmode') || '');
+  if(m.startsWith('Neutral')){
+    const g = val('ineutral').match(/(19|20)\d\d/);
+    return g ? g[0] : '';
+  }
+  if(m.startsWith('Not')){
+    const g = val('idate').match(/(19|20)\d\d/);
+    return g ? g[0] : '';
+  }
+  return val('year');
+}
+
+function indianConstString(full){
+  const c = val('iconstname') || 'India Const.';
+  const kind = val('ipart') || 'Article';
+  let s = esc(c.replace(/\.\s*$/,'')) + '.';
+  if(kind === 'Preamble'){
+    s += ' pmbl.';
+  }else{
+    s += kind === 'Schedule' ? ' sched. ' : (kind === 'Part' ? ' pt. ' : ' art. ');
+    s += val('ipartno') ? esc(val('ipartno')) : miss('number');
+  }
+  if(val('iclause')) s += ', cl. ' + esc(val('iclause'));
+  if(full && val('iamend')) s += ', ' + esc(val('iamend'));
+  return s;
+}
+
+function buildIndianLegal(){
+  const link = linkHTML(val('lurl'));
+
+  if(TYPE.id === 'case_in'){
+    const mode = val('cmode') || '';
+    let s = (val('casename') ? esc(val('casename')) : miss('case name')) + ', ';
+    if(mode.startsWith('AIR')){
+      s += 'AIR ' + (val('year') ? esc(val('year')) : miss('year')) + ' '
+         + (val('icourt') ? esc(val('icourt')) : miss('court')) + ' '
+         + (val('ipage2') ? esc(val('ipage2')) : miss('page'));
+    }else if(mode.startsWith('Neutral')){
+      s += val('ineutral') ? esc(val('ineutral')) : miss('neutral citation');
+    }else if(mode.startsWith('Not')){
+      s += (val('icaseno') ? esc(val('icaseno')) : miss('case number'))
+         + ' (' + (val('icourtfull') ? esc(val('icourtfull')) : miss('court')) + ', '
+         + (val('idate') ? esc(val('idate')) : miss('date')) + ')';
+    }else{
+      s += '(' + (val('year') ? esc(val('year')) : miss('year')) + ') '
+         + (val('ivol') ? esc(val('ivol')) : miss('volume')) + ' '
+         + (val('ireporter') ? esc(val('ireporter')) : miss('reporter')) + ' '
+         + (val('ipage') ? esc(val('ipage')) : miss('first page'));
+    }
+    if(val('ipin')) s += ', ' + esc(val('ipin'));
+    return endPunct(s + indiaTag()) + link;
+  }
+
+  if(TYPE.id === 'act_in'){
+    let s = (val('iactname') ? esc(val('iactname')) : miss('name of the Act'));
+    const bits = [];
+    if(val('iactno')) bits.push('No. ' + esc(val('iactno')));
+    if(val('iactsource')) bits.push(esc(val('iactsource')));
+    if(val('year')) bits.push(esc(val('year')));
+    s += bits.length ? ', ' + bits.join(', ') : '';
+    if(val('isection')) s += ', \u00a7 ' + esc(val('isection'));
+    return endPunct(s + indiaTag()) + link;
+  }
+
+  if(TYPE.id === 'const_in') return endPunct(indianConstString(true));
+
+  if(TYPE.id === 'bill_in'){
+    let s = it(val('ibilltitle') ? esc(val('ibilltitle')) : miss('title'));
+    const bits = [];
+    if(val('ibillno')) bits.push(esc(val('ibillno')));
+    if(val('ihouse')) bits.push(esc(val('ihouse')));
+    s += bits.length ? ', ' + bits.join(', ') : '';
+    const tail = [val('year'), val('istatus')].filter(Boolean).map(esc);
+    if(tail.length) s += ' (' + tail.join(', ') + ')';
+    return endPunct(s) + link;
+  }
+
+  if(TYPE.id === 'rule_in'){
+    let s = (val('iruletitle') ? esc(val('iruletitle')) : miss('title'));
+    const bits = [];
+    if(val('inotif')) bits.push('Notification No. ' + esc(val('inotif')));
+    if(val('igazette')) bits.push(esc(val('igazette')));
+    s += bits.length ? ', ' + bits.join(', ') : '';
+    if(val('irdate')) s += ' (' + esc(val('irdate')) + ')';
+    return endPunct(s) + link;
+  }
+  return null;
+}
+
+function buildLegal(){
+  if(TYPE.jur === 'IN') return buildIndianLegal();
+  const link = linkHTML(val('lurl'));
+  const y = val('year');
+
+  if(TYPE.id === 'case'){
+    let s = (val('casename') ? esc(val('casename')) : miss('case name')) + ', ';
+    s += (val('casevol') ? esc(val('casevol')) : miss('volume')) + ' ';
+    s += (val('reporter') ? esc(val('reporter')) : miss('reporter')) + ' ';
+    s += (val('casepage') ? esc(val('casepage')) : miss('first page'));
+    s += ' (' + (val('court') ? esc(val('court')) + ' ' : '') + (y ? esc(y) : miss('year')) + ').';
+    return s + link;
+  }
+
+  if(TYPE.id === 'statute'){
+    let s = (val('actname') ? esc(val('actname')) : miss('name of the act')) + ', ';
+    const where = [];
+    const code = val('code'), sec = val('section');
+    if(code || sec || val('titleno')){
+      let w = [val('titleno'), code].filter(Boolean).map(esc).join(' ');
+      if(sec) w += (w ? ' ' : '') + '\u00a7 ' + esc(sec);
+      if(V.etseq) w += ' et seq.';
+      where.push(w);
+    }
+    if(val('publaw')) where.push(esc(val('publaw')));
+    if(val('stat')) where.push(esc(val('stat')));
+    s += where.length ? where.join(', ') : miss('where it is published');
+    if(y) s += ' (' + esc(y) + ')';
+    return endPunct(s) + link;
+  }
+
+  if(TYPE.id === 'constitution') return endPunct(constitutionString(true));
+
+  if(TYPE.id === 'legislation'){
+    let s = it(val('billtitle') ? esc(val('billtitle')) : miss('title')) + ', ';
+    const bits = [val('billno'), val('session')].filter(Boolean).map(esc);
+    s += bits.length ? bits.join(', ') : miss('bill number');
+    s += ' (' + (y ? esc(y) : miss('year')) + ')';
+    if(val('billextra')) s += ', ' + esc(val('billextra'));
+    return endPunct(s) + link;
+  }
+  return null;
+}
+
+/* the name a legal source is cited by in running text */
+function legalName(){
+  if(TYPE.id === 'case_in')       return it(val('casename') ? esc(val('casename')) : miss('case name'));
+  if(TYPE.id === 'act_in')        return val('iactname') ? esc(val('iactname')) : miss('name of the Act');
+  if(TYPE.id === 'bill_in')       return val('ibilltitle') ? esc(val('ibilltitle')) : miss('title');
+  if(TYPE.id === 'rule_in')       return val('iruletitle') ? esc(val('iruletitle')) : miss('title');
+  if(TYPE.id === 'const_in')      return indianConstString();
+  if(TYPE.id === 'case')          return it(val('casename') ? esc(val('casename')) : miss('case name'));
+  if(TYPE.id === 'statute')       return val('actname') ? esc(val('actname')) : miss('name of the act');
+  if(TYPE.id === 'legislation')   return val('billtitle') ? esc(val('billtitle')) : miss('title');
+  if(TYPE.id === 'constitution')  return constitutionString();
+  return '';
+}
+
+/* the year to show in text — skipped when the name already ends in one */
+function legalYear(){
+  if(TYPE.id === 'case_in') return indianCaseYear();
+  const nm = strip(legalName()).trim();
+  if(/\d{4}$/.test(nm)) return '';   // the name already ends in its year
+  return val('year');
+}
+
+function buildReference(){
+  if(TYPE.noRef) return null;
+  if(TYPE.legal) return buildLegal();
+
+  const names = liveAuthors().map(refName).filter(Boolean);
+  let who = miss('author');
+  if(names.length){
+    const joined = joinRef(names);
+    // a name that ends in an initial already carries its full stop
+    who = esc(joined) + (/\.$/.test(joined) ? '' : '.');
+  }
+  const date = refDate();
+  const title = val('title');
+  const t = title ? esc(title) : miss('title');
+  const link = linkHTML(val('doi'));
+  const pub = val('publisher');
+  const cont = val('container');
+  const ed = val('edition');
+  const pages = enDash(val('pages'));
+  let s = who + ' (' + date + '). ';
+
+  switch(TYPE.id){
+
+    case 'journal':
+    case 'magazine': {
+      s += endPunct(t) + ' ';
+      const vol = val('volume');
+      let block = cont ? esc(cont) : miss('journal name');
+      if(vol) block += ', ' + esc(vol);
+      s += it(block);
+      if(val('issue')) s += '(' + esc(val('issue')) + ')';
+      if(pages) s += ', ' + esc(pages);
+      s += '.' + link;
+      break;
+    }
+
+    case 'dataset': {
+      s += it(t);
+      if(val('edition')) s += ' (' + esc(val('edition')) + ')';
+      s += ' [Data set]. ';
+      if(pub) s += esc(pub) + '.';
+      s = s.replace(/\s$/,'') + link;
+      break;
+    }
+
+    case 'book': {
+      let block = it(t);
+      if(ed) block += ' (' + esc(ed.replace(/\s*ed\.?$/i,'')) + ' ed.)';
+      s += block + '. ';
+      s += (pub ? esc(pub) : miss('publisher')) + '.' + link;
+      break;
+    }
+
+    case 'chapter': {
+      s += endPunct(t) + ' ';
+      const eds = parseEditors(val('editors'));
+      const edNames = eds.map(edName).filter(Boolean);
+      s += 'In ' + (edNames.length ? esc(joinEditors(edNames)) : miss('editors'));
+      s += ' (' + (edNames.length===1 ? 'Ed.' : 'Eds.') + '), ';
+      s += it(cont ? esc(cont) : miss('book title'));
+      const bits = [];
+      if(ed) bits.push(esc(ed.replace(/\s*ed\.?$/i,'')) + ' ed.');
+      if(pages) bits.push('pp. ' + esc(pages));
+      if(bits.length) s += ' (' + bits.join(', ') + ')';
+      s += '. ' + (pub ? esc(pub) : miss('publisher')) + '.' + link;
+      break;
+    }
+
+    case 'report': {
+      let block = it(t);
+      if(val('number')) block += ' (' + esc(val('number')) + ')';
+      s += block + '. ';
+      if(pub) s += esc(pub) + '.';
+      s = s.replace(/\s$/,'') + link;
+      break;
+    }
+
+    case 'webpage': {
+      s += it(t) + '. ';
+      if(cont) s += esc(cont) + '. ';
+      const r = val('retrieved');
+      if(r) s += 'Retrieved ' + esc(r) + ', from';
+      s = s.replace(/\s$/,'') + (link || ' ' + miss('URL'));
+      break;
+    }
+
+    case 'blog': {
+      s += endPunct(t) + ' ' + it(cont ? esc(cont) : miss('blog name')) + '.' + link;
+      break;
+    }
+
+    case 'video': {
+      s += it(t) + ' [Video]. ';
+      s += (cont ? esc(cont) : 'YouTube') + '.' + link;
+      break;
+    }
+
+    case 'conference': {
+      s += it(t) + ' [' + esc(val('kind') || 'Paper presentation') + ']. ';
+      s += (cont ? esc(cont) : miss('conference name'));
+      if(val('place')) s += ', ' + esc(val('place'));
+      s += '.' + link;
+      break;
+    }
+
+    case 'thesis': {
+      const kind = val('kind') || 'Doctoral dissertation';
+      const unpub = /^Unpublished/.test(kind);
+      let block = it(t);
+      if(!unpub && val('number')) block += ' (Publication No. ' + esc(val('number')) + ')';
+      s += block + ' ';
+      s += '[' + esc(kind) + (unpub ? '' : (pub ? ', ' + esc(pub) : ', ' + miss('university'))) + ']. ';
+      if(unpub) s += (pub ? esc(pub) : miss('university')) + '.';
+      else s += (cont ? esc(cont) : miss('database')) + '.';
+      s = s.replace(/\s$/,'') + link;
+      break;
+    }
+  }
+  return s;
+}
+
+/* =====================================================================
+   In-text citations (chapter 8)
+   ===================================================================== */
+function inTextName(opts){
+  const o = opts || {};
+  const list = liveAuthors();
+  if(!list.length) return miss('author');
+
+  if(list.length===1 && list[0].group){
+    const full = esc(surname(list[0]));
+    const ab = val('abbrev');
+    if(V.hasAbbrev && ab){
+      if(o.subsequent) return esc(ab);
+      return o.narrative ? full + ' (' + esc(ab) : full + ' [' + esc(ab) + ']';
+    }
+    return full;
+  }
+  const n = list.map(surname).filter(Boolean);
+  if(!n.length) return miss('author');
+  if(n.length===1) return esc(n[0]);
+  if(n.length===2) return esc(n[0]) + (o.narrative ? ' and ' : ' & ') + esc(n[1]);
+  return esc(n[0]) + ' et al.';           // 8.17: three or more, from the first citation
+}
+function locator(){
+  if(!V.hasPage || !val('locator')) return '';
+  const kind = V.locatorType || 'p.';
+  return ', ' + esc(kind) + ' ' + esc(enDash(val('locator')));
+}
+function citedIn(){
+  if(!V.secondary) return null;
+  const a = val('origAuthor'), y = val('origYear');
+  return {a: a ? esc(a) : miss('original author'), y: y ? esc(y) : miss('original year')};
+}
+
+/* parenthetical: (Author, year, p. x) — 8.11, 8.17 */
+function parenthetical(){
+  if(TYPE.legal){
+    if(TYPE.isConst) return '(' + legalName() + ')';
+    const y = legalYear();
+    return '(' + legalName() + (y ? ', ' + esc(y) : '') + locator() + ')';
+  }
+  const cin = citedIn();
+  if(TYPE.id === 'personal'){
+    const p = liveAuthors()[0];
+    const who = p ? (p.group ? esc(surname(p)) : esc((initialsOf(p.first||'')+' '+splitSuffix(p.last||'').name).trim())) : miss('name');
+    return '(' + who + ', personal communication, ' + (val('pcdate') ? esc(val('pcdate')) : miss('exact date')) + ')';
+  }
+  if(cin) return '(' + cin.a + ', ' + cin.y + ', as cited in ' + inTextName() + ', ' + textYear() + locator() + ')';
+  const nm = inTextName();
+  return '(' + nm + ', ' + textYear() + locator() + ')';
+}
+
+/* narrative: Author (year) — 8.11 */
+function narrative(){
+  if(TYPE.legal){
+    if(TYPE.isConst) return legalName();
+    const y = legalYear();
+    return legalName() + (y ? ' (' + esc(y) + locator() + ')' : locator().replace(/^,\s*/,' '));
+  }
+  const cin = citedIn();
+  if(TYPE.id === 'personal'){
+    const p = liveAuthors()[0];
+    const who = p ? (p.group ? esc(surname(p)) : esc((initialsOf(p.first||'')+' '+splitSuffix(p.last||'').name).trim())) : miss('name');
+    return who + ' (personal communication, ' + (val('pcdate') ? esc(val('pcdate')) : miss('exact date')) + ')';
+  }
+  if(cin) return cin.a + ' (' + cin.y + '; as cited in ' + inTextName({narrative:true}) + ', ' + textYear() + ')';
+  const list = liveAuthors();
+  const grouped = list.length===1 && list[0].group && V.hasAbbrev && val('abbrev');
+  if(grouped) return esc(surname(list[0])) + ' (' + esc(val('abbrev')) + ', ' + textYear() + locator() + ')';
+  return inTextName({narrative:true}) + ' (' + textYear() + locator() + ')';
+}
+
+/* =====================================================================
+   Render
+   ===================================================================== */
+function block(tagText, sec, bodyHTML, noteHTML, extraActions){
+  let h = '<div class="block"><span class="tag">'+esc(tagText)+' <span class="sec">'+esc(sec)+'</span></span>';
+  h += bodyHTML;
+  if(noteHTML) h += '<p class="note">'+noteHTML+'</p>';
+  if(extraActions) h += extraActions;
+  return h + '</div>';
+}
+
+function render(){
+  syncAbbrev();
+  const out = document.getElementById('output');
+  document.getElementById('folio').textContent = TYPE.folio;
+  let h = '';
+
+  const ref = buildReference();
+  if(ref){
+    h += '<h2>References</h2>';
+    h += block(TYPE.name.toLowerCase()+' reference', TYPE.sec,
+      '<p class="entry" id="refEntry">'+ref+'</p>',
+      'Every line after the first is indented by half an inch, and the whole list is double spaced.',
+      '<div class="acts">'
+      + '<button class="btn solid" type="button" data-copy="refEntry">Copy this entry</button>'
+      + '<button class="btn" type="button" id="addToList">Add to my reference list</button>'
+      + '</div>');
+    h += '<hr class="divide">';
+  }
+
+  const n = liveAuthors().length;
+  const cin = citedIn();
+
+  /* parenthetical */
+  const legalSec = TYPE.sec;
+  h += block('parenthetical citation', TYPE.legal ? legalSec : (cin ? '8.6' : '8.17'),
+    '<p class="running">'
+    + (TYPE.legal ? 'The duty applies in every such case ' : 'The scheme reduced leakage across districts ')
+    + '<span class="mark" id="paren">'+parenthetical()+'</span>.</p>',
+    TYPE.legal
+      ? (TYPE.isCase
+          ? 'A case name is plain in the reference list and italic every time you cite it in your writing. Once you have given the full name, a shortened one is fine.'
+          : (TYPE.isConst
+             ? 'No year is used for a constitution that is still in force.'
+             : (/\d{4}$/.test((val('actname') || val('iactname') || val('billtitle') || val('ibilltitle') || '').trim())
+                ? 'The year is already part of the name here, so you can leave it out of the brackets and cite it by name alone.'
+                : 'The year in the citation is the year of the version you read.')))
+      : (n>=3 && !cin ? 'With three or more authors, name only the first and add <em>et al.</em> from the very first citation.' : null),
+    '<div class="acts"><button class="btn quiet" type="button" data-copy="paren">Copy</button></div>');
+
+  /* narrative */
+  if(TYPE.isConst){
+    h += block('naming it in a sentence', TYPE.sec,
+      '<p class="running">The amendment is cited in full wherever it appears: <span class="mark" id="narr">'+narrative()+'</span>, with no year and no reference-list date.</p>',
+      'Article, section and clause are abbreviated art., \u00a7 and cl. A repealed or amended part carries a note in brackets after it.',
+      '<div class="acts"><button class="btn quiet" type="button" data-copy="narr">Copy</button></div>');
+  }else{
+    h += block('narrative citation', TYPE.legal ? legalSec : (cin ? '8.6' : '8.11'),
+      '<p class="running"><span class="mark" id="narr">'+narrative()+'</span>'
+      + (TYPE.legal ? ' settled the question.' : ' reached the same conclusion.') + '</p>',
+      TYPE.legal
+        ? 'Name it in your sentence and the year follows in brackets, exactly as it would for any other source.'
+        : 'In running text the year sits in brackets right after the name. Within the same paragraph you can then drop the year on later mentions (8.16).',
+      '<div class="acts"><button class="btn quiet" type="button" data-copy="narr">Copy</button></div>');
+  }
+
+  /* quotation */
+  if(V.hasPage && val('locator')){
+    h += block('short quotation', '8.25, 8.26',
+      '<p class="running">The committee found the shift <span class="mark">\u201clarge, sustained and unevenly distributed\u201d '+parenthetical()+'</span>.</p>',
+      'Under 40 words: keep it in the line, inside double quotation marks. From 40 words up, set it as a block quotation indented half an inch with no quotation marks, and put the citation after the closing full stop (8.27).');
+  }
+
+  /* group author abbreviation */
+  if(V.hasAbbrev && val('abbrev') && liveAuthors().length===1 && liveAuthors()[0].group){
+    h += block('group author, first and later mentions', '9.11, 8.1',
+      '<p class="running">First time: <span class="mark">'+parenthetical()+'</span><br>'
+      + 'After that: <span class="mark">('+esc(val('abbrev'))+', '+textYear()+')</span></p>',
+      'Give the full name with the abbreviation in square brackets once, then use the abbreviation alone. Every paragraph that uses the source needs its own citation.');
+  }
+
+  /* secondary source */
+  if(cin){
+    h += block('secondary source', '8.6',
+      '<p class="running">Only the work you read appears above in the reference list.</p>',
+      'Use this sparingly. If the original is available, read it and cite it directly instead.');
+  }
+
+  /* personal communication */
+  if(TYPE.id==='personal'){
+    h += block('no reference entry', '8.9',
+      '<p class="running">Emails, interviews, phone calls, messages and unrecorded talks are cited in the text only \u2014 there is nothing for a reader to retrieve, so they are left out of the reference list.</p>');
+  }
+
+  /* related forms that the manual highlights */
+  h += '<hr class="divide">';
+  if(TYPE.legal){
+    h += block('how legal references differ', TYPE.sec,
+      '<p class="running">Legal sources drop the who-when-what-where order and run <strong>what, where, when</strong>: the name of the thing, where it is published, then the date.</p>',
+      JUR === 'IN'
+        ? 'Chapter 11 of the manual covers United States and United Nations material only and sends you elsewhere for every other jurisdiction. So an Indian reference follows Indian practice \u2014 the reporter, the Act number and enacting authority, the Gazette part \u2014 while the in-text citation stays in ordinary APA name-and-year form. Cite the version of record: India Code for Acts, the e-Gazette for notifications, SCC or AIR for judgments, with the court\u2019s own neutral citation where one exists. Check the provision has not been amended or the judgment overruled before you rely on it, and follow your department\u2019s house style where it differs.'
+        : 'Cite the version of record from an official publication such as the <em>United States Code</em> or the <em>Federal Register</em>, and add a URL only as a convenience. Check the source is still good law before you rely on it \u2014 the Legal Information Institute at Cornell is a reliable place to do that.');
+    out.innerHTML = h;
+    wireOutput(out);
+    return;
+  }
+  h += block('pointing a reader elsewhere', '8.11, 8.12',
+    '<p class="running">'
+    + 'For more: <span class="mark">(see '+plainName()+', '+textYear()+', for more)</span><br>'
+    + 'See also: <span class="mark">(see also '+plainName()+', '+textYear()+')</span>'
+    + '</p>',
+    'Both go inside the brackets with the citation, not before them.');
+
+  out.innerHTML = h;
+  wireOutput(out);
+}
+
+function wireOutput(out){
+  out.querySelectorAll('[data-copy]').forEach(b => {
+    b.addEventListener('click', () => {
+      const el = document.getElementById(b.dataset.copy);
+      if(el) copy(el.innerHTML, el.textContent, b.dataset.copy === 'refEntry');
+    });
+  });
+  const add = document.getElementById('addToList');
+  if(add) add.addEventListener('click', addToList);
+}
+function plainName(){
+  if(TYPE.legal) return legalName();
+  const list = liveAuthors();
+  if(!list.length) return miss('author');
+  const n = list.map(surname).filter(Boolean);
+  if(!n.length) return miss('author');
+  if(n.length===1) return esc(n[0]);
+  if(n.length===2) return esc(n[0])+' & '+esc(n[1]);
+  return esc(n[0])+' et al.';
+}
+
+/* ---------- reference list ---------- */
+function sortKey(html){
+  return html.replace(/<[^>]+>/g,'').replace(/^(A|An|The)\s+/i,'').toLowerCase();
+}
+function addToList(){
+  const r = buildReference();
+  if(!r) return;
+  refList.push(r);
+  refList.sort((a,b) => sortKey(a).localeCompare(sortKey(b)));
+  renderList();
+  toast('Added and alphabetised');
+}
+function renderList(){
+  const body = document.getElementById('listBody');
+  document.getElementById('listCount').textContent = refList.length ? '('+refList.length+')' : '';
+  if(!refList.length){
+    body.innerHTML = '<p class="list-empty">Nothing here yet. Build an entry above and add it \u2014 entries are alphabetised as they arrive, and you can copy the finished list into your paper with its indents intact.</p>';
+    return;
+  }
+  body.innerHTML = refList.map((r,i) =>
+    '<div class="item"><p class="entry">'+r+'</p><button class="x" type="button" data-rm="'+i+'" aria-label="Remove this entry">\u00d7</button></div>'
+  ).join('');
+  body.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+    refList.splice(+b.dataset.rm,1); renderList();
+  }));
+}
+function copyAll(){
+  if(!refList.length){ toast('The list is empty'); return; }
+  const html = '<p style="text-align:center"><b>References</b></p>' + refList.map(r =>
+    '<p style="text-indent:-0.5in;margin-left:0.5in;line-height:2">'+r.replace(/<span class="miss">/g,'<span>')+'</p>'
+  ).join('');
+  copy(html, 'References\n\n' + refList.map(r => strip(r)).join('\n\n'), false);
+}
+const strip = h => { const d=document.createElement('div'); d.innerHTML=h; return d.textContent; };
+
+/* ---------- clipboard ---------- */
+async function copy(html, plain, hanging){
+  const wrapped = hanging
+    ? '<p style="text-indent:-0.5in;margin-left:0.5in;line-height:2">'+html+'</p>'
+    : '<span>'+html+'</span>';
+  try{
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([wrapped],{type:'text/html'}),
+      'text/plain': new Blob([plain],{type:'text/plain'})
+    })]);
+    toast('Copied with its italics');
+  }catch(e){
+    try{
+      await navigator.clipboard.writeText(plain);
+      toast('Copied as plain text \u2014 re-apply the italics');
+    }catch(e2){
+      const ta = document.createElement('textarea');
+      ta.value = plain; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove();
+      toast('Copied as plain text');
+    }
+  }
+}
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 1900);
+}
+
+/* =====================================================================
+   Form building
+   ===================================================================== */
+function renderChips(){
+  document.getElementById('typeChips').innerHTML = TYPES.filter(t => !t.jur || t.jur === JUR).map(t =>
+    '<button class="chip" type="button" data-t="'+t.id+'" aria-pressed="'+(t.id===TYPE.id)+'">'+esc(t.name)+'</button>'
+  ).join('');
+  document.querySelectorAll('#typeChips .chip').forEach(c => c.addEventListener('click', () => {
+    TYPE = TYPES.find(t => t.id===c.dataset.t);
+    renderChips(); renderFields(); render();
+  }));
+  document.querySelectorAll('#jurChips .chip').forEach(c => {
+    c.setAttribute('aria-pressed', String(c.dataset.j === JUR));
+  });
+}
+
+function setJurisdiction(j){
+  if(j === JUR) return;
+  JUR = j;
+  if(TYPE.legal && COUNTERPART[TYPE.id]){
+    TYPE = TYPES.find(t => t.id === COUNTERPART[TYPE.id]) || TYPE;
+  }
+  renderChips(); renderFields(); render();
+}
+document.querySelectorAll('#jurChips .chip').forEach(c =>
+  c.addEventListener('click', () => setJurisdiction(c.dataset.j)));
+
+function renderAuthors(){
+  document.getElementById('authorLegend').textContent = TYPE.authorLabel;
+  document.getElementById('authors').innerHTML = authors.map((a,i) =>
+    '<div class="author">'
+    + (a.group
+        ? '<input class="inp" data-a="'+i+'" data-f="last" value="'+esc(a.last)+'" placeholder="Indian Council of Social Science Research" aria-label="Organisation name">'
+        : '<input class="inp" data-a="'+i+'" data-f="last" value="'+esc(a.last)+'" placeholder="Deshpande" aria-label="Surname">'
+          + '<input class="inp" data-a="'+i+'" data-f="first" value="'+esc(a.first)+'" placeholder="Ashwini S." aria-label="Given names">')
+    + '<label class="grouptog"><input type="checkbox" data-g="'+i+'"'+(a.group?' checked':'')+'>group</label>'
+    + (authors.length>1 ? '<button class="x" type="button" data-da="'+i+'" aria-label="Remove this author">\u00d7</button>' : '')
+    + '</div>'
+  ).join('');
+
+  document.querySelectorAll('#authors [data-a]').forEach(el => el.addEventListener('input', () => {
+    authors[+el.dataset.a][el.dataset.f] = el.value; render();
+  }));
+  document.querySelectorAll('#authors [data-g]').forEach(el => el.addEventListener('change', () => {
+    const a = authors[+el.dataset.g];
+    a.group = el.checked;
+    if(a.group && a.first){ a.last = (a.last+' '+a.first).trim(); a.first=''; }
+    renderAuthors(); syncAbbrev(); render();
+  }));
+  document.querySelectorAll('#authors [data-da]').forEach(el => el.addEventListener('click', () => {
+    authors.splice(+el.dataset.da,1); renderAuthors(); render();
+  }));
+  syncAbbrev();
+}
+
+const DATE_HINT_DEFAULT = 'No date anywhere on the source? Put <strong>n.d.</strong> in the year box. Conference dates can be a range: <em>August 23\u201327</em>.';
+
+function renderFields(){
+  const wrap = document.getElementById('fields');
+  const legal = !!TYPE.legal;
+  document.getElementById('detailLegend').textContent = TYPE.name + ' details';
+
+  /* legal sources have no author and no leading date */
+  document.getElementById('authorSet').hidden = legal;
+  document.getElementById('dateSet').hidden = !!TYPE.noYear;
+  document.getElementById('datepartWrap').hidden = legal;
+  document.getElementById('yearLab').textContent = TYPE.dateLabel || 'Year';
+  document.getElementById('dateHint').innerHTML = TYPE.dateHint || DATE_HINT_DEFAULT;
+  document.getElementById('secondaryCheck').hidden = legal;
+  if(legal){
+    document.getElementById('secondary').checked = false;
+    V.secondary = false;
+    document.getElementById('secondaryPanel').hidden = true;
+  }
+
+  /* a select must hold a valid value before the conditional fields are tested */
+  TYPE.fields.forEach(f => { if(f.sel && !f.sel.includes(V[f.k])) V[f.k] = f.sel[0]; });
+
+  wrap.innerHTML = TYPE.fields.map(f => {
+    if(f.when && !f.when(V)) return '';
+    const w = f.w ? ' '+f.w : '';
+    const id = 'f_'+f.k;
+    let control;
+    if(f.sel){
+      if(!f.sel.includes(V[f.k])) V[f.k] = f.sel[0];
+      control = '<select class="inp" id="'+id+'" data-k="'+f.k+'"'+(f.rerender?' data-re="1"':'')+'>'
+        + f.sel.map(o => '<option'+(V[f.k]===o?' selected':'')+'>'+esc(o)+'</option>').join('')
+        + '</select>';
+    }else if(f.chk){
+      return '<div class="row"><div class="field">'
+        + '<label class="check" style="margin:0"><input type="checkbox" id="'+id+'" data-k="'+f.k+'"'
+        + (V[f.k]?' checked':'') + '><span>'+esc(f.chk)+'</span></label></div></div>';
+    }else if(f.ta){
+      control = '<textarea class="inp" id="'+id+'" data-k="'+f.k+'" rows="3" placeholder="'+esc(f.ph||'')+'">'+esc(V[f.k]||'')+'</textarea>';
+    }else{
+      control = '<input class="inp" id="'+id+'" data-k="'+f.k+'" value="'+esc(V[f.k]||'')+'" placeholder="'+esc(f.ph||'')+'">';
+    }
+    const caseBtn = f.cs ? '<button class="mini" type="button" data-cs="'+f.cs+'" data-for="'+id+'">'
+        + (f.cs==='sentence'?'Fix to sentence case':'Fix to Title Case') + '</button>' : '';
+    return '<div class="row"><div class="field'+w+'">'
+      + '<div class="labrow"><label class="lab" for="'+id+'">'+esc(f.label)+'</label>'+caseBtn+'</div>'
+      + control
+      + (f.hint ? '<p class="hint">'+f.hint+'</p>' : '')
+      + '</div></div>';
+  }).join('');
+
+  wrap.querySelectorAll('[data-k]').forEach(el => {
+    const ev = el.tagName==='SELECT' ? 'change' : 'input';
+    if(el.tagName==='SELECT') V[el.dataset.k] = el.value;
+    el.addEventListener(ev, () => {
+      V[el.dataset.k] = (el.type === 'checkbox') ? el.checked : el.value;
+      if(el.dataset.re){ renderFields(); }
+      render();
+    });
+  });
+  wrap.querySelectorAll('[data-cs]').forEach(b => b.addEventListener('click', () => {
+    const el = document.getElementById(b.dataset.for);
+    el.value = b.dataset.cs==='sentence' ? sentenceCase(el.value) : titleCase(el.value);
+    V[el.dataset.k] = el.value; render();
+    toast('Check proper nouns \u2014 only you know which words are names');
+  }));
+  renderAuthors();
+}
+
+function syncAbbrev(){
+  const isGroup = liveAuthors().length===1 && liveAuthors()[0] && liveAuthors()[0].group;
+  document.getElementById('abbrevCheck').hidden = !isGroup;
+  if(!isGroup){
+    document.getElementById('hasAbbrev').checked = false;
+    V.hasAbbrev = false;
+    document.getElementById('abbrevPanel').hidden = true;
+  }
+}
+
+/* ---------- top-level field wiring ---------- */
+['year','datepart','origAuthor','origYear','locator','abbrev'].forEach(k => {
+  document.getElementById(k).addEventListener('input', e => { V[k] = e.target.value; render(); });
+});
+document.getElementById('locatorType').addEventListener('change', e => { V.locatorType = e.target.value; render(); });
+
+function toggle(boxId, panelId, key){
+  const box = document.getElementById(boxId);
+  box.addEventListener('change', () => {
+    V[key] = box.checked;
+    document.getElementById(panelId).hidden = !box.checked;
+    render();
+  });
+}
+toggle('secondary','secondaryPanel','secondary');
+toggle('hasPage','pagePanel','hasPage');
+toggle('hasAbbrev','abbrevPanel','hasAbbrev');
+
+document.getElementById('addAuthor').addEventListener('click', () => {
+  authors.push({last:'',first:'',group:false}); renderAuthors(); render();
+  const last = document.querySelector('#authors .author:last-child input[data-f="last"]');
+  if(last) last.focus();
+});
+document.getElementById('clearForm').addEventListener('click', () => {
+  authors = [{last:'',first:'',group:false}];
+  Object.keys(V).forEach(k => { if(!['locatorType'].includes(k)) delete V[k]; });
+  ['year','datepart','origAuthor','origYear','locator','abbrev'].forEach(k => document.getElementById(k).value='');
+  ['secondary','hasPage','hasAbbrev'].forEach(k => document.getElementById(k).checked=false);
+  ['secondaryPanel','pagePanel','abbrevPanel'].forEach(k => document.getElementById(k).hidden=true);
+  renderFields(); render();
+});
+document.getElementById('loadExample').addEventListener('click', loadExample);
+document.getElementById('copyAll').addEventListener('click', copyAll);
+document.getElementById('clearAll').addEventListener('click', () => { refList=[]; renderList(); });
+
+/* ---------- a worked example ---------- */
+function loadExample(){
+  JUR = 'IN';
+  TYPE = TYPES.find(t => t.id === 'case_in');
+  authors = [{last:'',first:'',group:false}];
+  Object.keys(V).forEach(k => { if(k !== 'locatorType') delete V[k]; });
+  Object.assign(V, {
+    casename:'Kesavananda Bharati v. State of Kerala',
+    cmode:'SCC and similar \u2014 (1973) 4 SCC 225',
+    year:'1973', ivol:'4', ireporter:'SCC', ipage:'225'
+  });
+  document.getElementById('year').value = '1973';
+  document.getElementById('datepart').value = '';
+  ['secondary','hasPage','hasAbbrev'].forEach(k => document.getElementById(k).checked = false);
+  ['secondaryPanel','pagePanel','abbrevPanel'].forEach(k => document.getElementById(k).hidden = true);
+  renderChips(); renderFields(); render();
+  toast('Loaded a landmark judgment');
+}
+
+/* ---------- start ---------- */
+renderChips();
+renderFields();
+render();
+renderList();
+</script>
+</body>
+</html>
